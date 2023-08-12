@@ -12,7 +12,7 @@ class Vendor(models.Model):
     vendor_license = models.ImageField(upload_to='vendor/license', null=True,blank=True)
     nid_passport=models.ImageField(upload_to="media/nid_passport",blank=True,null=True)
     about_us = models.TextField(null=True, blank=True)
-    followers=models.ManyToManyField(User,related_name="followers",blank=True, null=True)
+    followers=models.ManyToManyField(User,related_name="followers",blank=True)
     slug = models.SlugField(unique=True, max_length=255, null=True, blank=True)
     business_logo = models.ImageField(upload_to='media/business_logo/', null=True, blank=True)
     business_banner = models.ImageField(upload_to='media/business_banner/', null=True, blank=True)
@@ -25,7 +25,7 @@ class Vendor(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.vendor_name
+        return self.business_name
     def generate_uuid_slug(self):
         return str(uuid.uuid4().hex)
 

@@ -1,7 +1,8 @@
 import uuid
 from django.db import models
 from django.utils.text import slugify
-from accounts.models import User
+from accounts.models import User, AddressUs
+
 
 # Create your models here.
 class Vendor(models.Model):
@@ -17,9 +18,7 @@ class Vendor(models.Model):
     business_logo = models.ImageField(upload_to='media/business_logo/', null=True, blank=True)
     business_banner = models.ImageField(upload_to='media/business_banner/', null=True, blank=True)
     country_manager=models.ForeignKey(User, related_name="country_manager", on_delete=models.SET_NULL, null=True,blank=True)
-    address = models.CharField(max_length=300, blank=True, null=True)
-    city = models.CharField(max_length=30, blank=True, null=True)
-    country = models.CharField(max_length=30, blank=True, null=True)
+    business_address = models.OneToOneField('accounts.AddressUS', on_delete=models.SET_NULL, null=True, blank=True)
     is_admin_approved = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

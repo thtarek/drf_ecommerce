@@ -1,9 +1,30 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
 
+class UserType(models.Model):
+    key = models.CharField(max_length=255, null=True, blank=True, unique=True)
+    value = models.CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self) -> str:
+        return "[%s]: %s" % (self.id, self.user_type_name)
+
+class AddressUs(models.Model):
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
+    address_one = models.CharField(max_length=300, null=True, blank=True)
+    address_two = models.CharField(max_length=300, null=True, blank=True)
+    city = models.CharField(max_length=200, null=True, blank=True)
+    zipcode = models.IntegerField(null=True, blank=True)
+    country = models.CharField(max_length=2, null=True, blank=True)
+
+
+    def __str__(self):
+        return self.address_one + ' ' + self.address_two + ' ' + self.city + ', ' + self.state
+    
+
+
 
 class MyUserManager(BaseUserManager):
-    def create_user(self, email, first_name,last_name,phone_number, password=None):
+    def create_user(self, email, first_name,last_name, password=None):
         """
         Creates and saves a User with the given email, date of
         birth and password.
@@ -15,14 +36,13 @@ class MyUserManager(BaseUserManager):
             email=self.normalize_email(email),
             first_name = first_name,
             last_name = last_name,
-            phone_number = phone_number,
         )
 
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, first_name, last_name, phone_number, password=None):
+    def create_superuser(self, email, first_name, last_name, password=None):
         """
         Creates and saves a superuser with the given email, date of
         birth and password.
@@ -32,7 +52,6 @@ class MyUserManager(BaseUserManager):
             password=password,
             first_name = first_name,
             last_name = last_name,
-            phone_number = phone_number
         )
         user.is_admin = True
         user.is_active = True
@@ -43,21 +62,16 @@ class MyUserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser):
-    username=None
     email = models.EmailField(
         verbose_name="email address",
         max_length=255,
         unique=True,
     )
-    VENDOR=1
-    B2B_VENDOR=2
-    CUSTOMER=3
-    COUNTRY_MANAGER=4
-    ROLE_CHOICE = (
-        (VENDOR, 'Vendor'),
-        (B2B_VENDOR, 'B2B Vendor'),
-        (CUSTOMER, 'Customer'),
-        (COUNTRY_MANAGER, 'Country Manager')
+    username = models.CharField(
+        max_length=100,
+        unique=True,
+        blank=True,  
+        null=True,
     )
     GENDER_CHOICE = (
         ('M', 'Male'),
@@ -67,9 +81,8 @@ class User(AbstractBaseUser):
     first_name = models.CharField(max_length=50,blank=True, null=True)
     last_name = models.CharField(max_length=50,blank=True, null=True)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
-    phone_number = models.CharField(max_length=15, blank=True, null=True)
-    address = models.CharField(max_length=300, blank=True, null=True)
-    role = models.PositiveSmallIntegerField(choices=ROLE_CHOICE, blank=True, null=True)
+    addresses = models.ManyToManyField(AddressUs, blank=True)
+    user_type = models.OneToOneField(UserType, on_delete=models.SET_NULL, db_column='user_type', blank=True, null=True, related_name="usertype")
     gender = models.CharField(choices=GENDER_CHOICE,max_length=12, blank=True, null=True)
     date_joined = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(auto_now_add=True)
@@ -85,7 +98,7 @@ class User(AbstractBaseUser):
     objects = MyUserManager()
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ['first_name', 'last_name', 'phone_number']
+    REQUIRED_FIELDS = ['first_name', 'last_name']
 
     def __str__(self):
         return self.email
@@ -99,5 +112,9 @@ class User(AbstractBaseUser):
         "Does the user have permissions to view the app `app_label`?"
         # Simplest possible answer: Yes, always
         return True
+    
+
+
+   
 
   

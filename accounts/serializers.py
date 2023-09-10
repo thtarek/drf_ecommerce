@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.core.exceptions import ValidationError
-from .models import User
+from .models import *
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -34,3 +34,16 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         return user
+    
+class CreateUserTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserType
+        fields = ["key","value"]
+    
+    def validate_value(self, value):
+        if len(value) > 11:
+            raise ValidationError("Length of value less then or equal 10")
+        return value
+    def create(self, validated_data):
+        type =  UserType(**validated_data)
+        return type

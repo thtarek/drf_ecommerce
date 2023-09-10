@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import UserRegistrationSerializer
+from .serializers import *
 
 # Create your views here.
 
@@ -20,3 +20,16 @@ def user_registration_view(request):
             }
             return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def create_user_type_view(request):
+    if request.method == "POST":
+        serializer = CreateUserTypeSerializer(data=request.data)
+        if serializer.is_valid():
+            # tt = serializer.validated_data['key']
+            type = serializer.save()
+            response_data = {"message": "Create new user type successfully"}
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+

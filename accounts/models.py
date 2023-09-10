@@ -6,7 +6,7 @@ class UserType(models.Model):
     value = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self) -> str:
-        return "[%s]: %s" % (self.id, self.user_type_name)
+        return "[%s]: %s" % (self.id, self.key)
 
 class AddressUs(models.Model):
     phone_number = models.CharField(max_length=15, blank=True, null=True)

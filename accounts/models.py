@@ -9,6 +9,7 @@ class UserType(models.Model):
         return "[%s]: %s" % (self.id, self.key)
 
 class AddressUs(models.Model):
+    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='user_address', null=True, blank=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     address_one = models.CharField(max_length=300, null=True, blank=True)
     address_two = models.CharField(max_length=300, null=True, blank=True)
@@ -18,7 +19,7 @@ class AddressUs(models.Model):
 
 
     def __str__(self):
-        return self.address_one + ' ' + self.address_two + ' ' + self.city + ', ' + self.state
+        return self.user.first_name
     
 
 
@@ -81,15 +82,14 @@ class User(AbstractBaseUser):
     first_name = models.CharField(max_length=50,blank=True, null=True)
     last_name = models.CharField(max_length=50,blank=True, null=True)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
-    addresses = models.ManyToManyField(AddressUs, blank=True)
-    user_type = models.OneToOneField(UserType, on_delete=models.SET_NULL, db_column='user_type', blank=True, null=True, related_name="usertype")
+    user_type = models.ForeignKey(UserType, on_delete=models.SET_NULL, db_column='user_type', blank=True, null=True, related_name="usertype")
     gender = models.CharField(choices=GENDER_CHOICE,max_length=12, blank=True, null=True)
     date_joined = models.DateTimeField(auto_now_add=True)
-    last_login = models.DateTimeField(auto_now_add=True)
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
 
     is_active = models.BooleanField(default=True)
+    email_verified = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
     is_superadmin = models.BooleanField(default=False)

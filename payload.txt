@@ -1,0 +1,19 @@
+http://127.0.0.1:8000/accounts/user-register/
+{
+    "email": "user@example3.com",
+    "first_name": "John",
+    "last_name": "Doe",
+    "gender": "M",
+    "user_type":1,
+    "password":"django@123",
+    "user_address": [
+        {
+            "phone_number": "01515613277",
+            "address_one": "123 Main Street",
+            "address_two": "Apt 4B",
+            "city": "NYC",
+            "zipcode": 12345,
+            "country": "US"
+        }
+    ]
+}

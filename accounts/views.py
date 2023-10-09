@@ -10,7 +10,7 @@ from .serializers import *
 def user_registration_view(request):
     if request.method == "POST":
         serializer = UserRegistrationSerializer(data=request.data)
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             user = serializer.save()
             response_data = {
                 "message": "User registered successfully",
@@ -31,7 +31,7 @@ def create_user_type_view(request):
 
     if request.method == "POST":
         serializer = CreateUserTypeSerializer(data=request.data)
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             # tt = serializer.validated_data['key']
             type = serializer.save()
             response_data = {"message": "Create new user type successfully"}
@@ -43,7 +43,7 @@ def manage_user_type_view(request, pk):
     instance = get_object_or_404(UserType, id=pk)
     if request.method == 'PATCH':
         serializer = CreateUserTypeSerializer(instance, data=request.data, partial=True)
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             serializer.save()
             response_data = {
                 "status":True,

@@ -1,10 +1,22 @@
 from rest_framework.decorators import api_view
+from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import *
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
+
 
 # Create your views here.
+
+def get_tokens_for_user(user):
+    refresh = RefreshToken.for_user(user)
+
+    return {
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+    }
 
 @api_view(['POST'])
 def user_registration_view(request):
@@ -57,6 +69,22 @@ def manage_user_type_view(request, pk):
     elif request.method == 'DELETE':
         instance.delete()
         return Response({"message": "User type deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+
+class UserLoginView(APIView):
+    def post(self, request):
+        serializer = UserLoginSerializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.data.get('email')
+            password = serializer.data.get('password')
+            user = authenticate(email=email, password=password)
+            if user is not None:
+                token=get_tokens_for_user(user)
+                return Response({'token':token,"message": "Login success!"}, status=status.HTTP_200_OK)
+            else:
+                return Response({"errors": "Email or Password is not valid!"}, status=status.HTTP_404_NOT_FOUND)
+        return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
     
 
 

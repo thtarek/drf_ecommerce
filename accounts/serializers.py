@@ -61,4 +61,9 @@ class CreateUserTypeSerializer(serializers.ModelSerializer):
         if UserType.objects.filter(key=value).exists():
             raise serializers.ValidationError("The key must be unique.")
         return value
+class UserLoginSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField()
+    class Meta:
+        model = User
+        fields = ['email','password']
   

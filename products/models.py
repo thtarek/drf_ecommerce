@@ -43,21 +43,23 @@ class ProductUnit(models.Model):
         return self.name
     
 class Product(models.Model):
-    vendor = models.ForeignKey(User ,on_delete=models.DO_NOTHING, related_name="vendor_products",null=True,blank=True)
+    vendor = models.ForeignKey(User ,on_delete=models.PROTECT, related_name="vendor_products",null=True,blank=True)
     name = models.CharField(max_length=255, null=True, blank=True)
     slug = models.SlugField(unique=True, max_length=300, null=True, blank=True)
-    description = models.TextField(blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name="category_products")
     color = models.ManyToManyField(Color)
     brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, blank=True, related_name="barand_products")
     size = models.ManyToManyField(ProductSize)
     unit = models.ForeignKey(ProductUnit, on_delete=models.SET_NULL, null=True, blank=True)
     cost_price = models.DecimalField(max_digits=10, decimal_places=2)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
     regular_price = models.DecimalField(max_digits=10, decimal_places=2)
+    discount_price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity_in_stock = models.PositiveIntegerField(default=0)
     status = models.BooleanField(default=True)
+    is_delete = models.BooleanField(default=False)
     barcode = models.ImageField(upload_to='product_barcode_image/', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
     def __str__(self):
@@ -77,9 +79,29 @@ class ProductGalleryImage(models.Model):
 
     def __str__(self):
         return f"Gallery Image for {self.product.name}"
+class productInventory(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='inventory')
+    quantity = models.IntegerField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+class ProductDetails(models.Model):
+    product = models.OneToOneField(Product, on_delete=models.CASCADE, related_name='details')
+    description = models.TextField(blank=True, null=True)
+    specification = models.TextField(blank=True, null=True)
+
+class ProductReview(models.Model):
+    user = models.ForeignKey(User ,on_delete=models.DO_NOTHING, related_name="reviewed_by",null=True,blank=True)
+    name = models.CharField(max_length=255, null=True, blank=True) ##if have user, dont use this name. use user name##
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
+    rating = models.FloatField(null=True, blank=True)
+    comment = models.TextField(null=True, blank=True)
+
+
+
+
     
 class ProductDeliveryLocation(models.Model):
-
     charge = models.DecimalField(max_digits=10, decimal_places=2)     
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)

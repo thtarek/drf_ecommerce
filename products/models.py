@@ -1,11 +1,18 @@
 from django.db import models
 
-from accounts.models import User
+from accounts.models import *
 
 # Create your models here.
 class Country(models.Model):
     name = models.CharField(max_length=100)
     code = models.CharField(max_length=3, unique=True, null=True, blank=True)  # Country code (e.g., "USA", "CAN")
+class State(models.Model):
+    name = models.CharField(max_length=100)
+    country = models.ForeignKey(Country,on_delete=models.CASCADE, null=True, blank=True)
+class City(models.Model):
+    name = models.CharField(max_length=100)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE, null=True, blank=True) 
+    sate = models.ForeignKey(State, on_delete=models.CASCADE, null=True, blank=True) 
 
     def __str__(self):
         return self.name
@@ -43,7 +50,7 @@ class ProductUnit(models.Model):
         return self.name
     
 class Product(models.Model):
-    vendor = models.ForeignKey(User ,on_delete=models.PROTECT, related_name="vendor_products",null=True,blank=True)
+    vendor = models.ForeignKey('accounts.User' ,on_delete=models.PROTECT, related_name="vendor_products",null=True,blank=True)
     name = models.CharField(max_length=255, null=True, blank=True)
     slug = models.SlugField(unique=True, max_length=300, null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name="category_products")
@@ -60,6 +67,8 @@ class Product(models.Model):
     barcode = models.ImageField(upload_to='product_barcode_image/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    delivery_countries = models.ManyToManyField(Country, related_name="delivery_products")
+
 
 
     def __str__(self):
@@ -91,7 +100,7 @@ class ProductDetails(models.Model):
     specification = models.TextField(blank=True, null=True)
 
 class ProductReview(models.Model):
-    user = models.ForeignKey(User ,on_delete=models.DO_NOTHING, related_name="reviewed_by",null=True,blank=True)
+    user = models.ForeignKey('accounts.User' ,on_delete=models.DO_NOTHING, related_name="reviewed_by",null=True,blank=True)
     name = models.CharField(max_length=255, null=True, blank=True) ##if have user, dont use this name. use user name##
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
     rating = models.FloatField(null=True, blank=True)
@@ -102,9 +111,10 @@ class ProductReview(models.Model):
 
     
 class ProductDeliveryLocation(models.Model):
-    charge = models.DecimalField(max_digits=10, decimal_places=2)     
+    charge = models.DecimalField(max_digits=10, decimal_places=2)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    state = models.ForeignKey(State, on_delete=models.SET_NULL, null=True)
+    city = models.ForeignKey(City, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
-        return self.name
+        return f"{self.country.name} - Charge: {self.charge}"

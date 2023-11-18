@@ -17,3 +17,25 @@ http://127.0.0.1:8000/accounts/user-register/
         }
     ]
 }
+
+
+http://127.0.0.1:8000/products/create-product/
+{
+    "name": "Product Name 2",
+    "slug": "product-slug-2",
+    "category": 1,
+    "color": [1],
+    "brand": 1,
+    "size": [1],
+    "unit": 1,
+    "cost_price": 50.00,
+    "regular_price": 60.00,
+    "discount_price": 45.00,
+    "quantity_in_stock": 100,
+    "status": true,
+    "is_delete": false,
+    "barcode": null,
+    "delivery_countries": [1]
+}
+
+

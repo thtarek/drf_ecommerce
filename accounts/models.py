@@ -1,5 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
+from products.models import *
+from django.apps import apps
+
 
 class UserType(models.Model):
     key = models.CharField(max_length=255, null=True, blank=True, unique=True)
@@ -8,19 +11,7 @@ class UserType(models.Model):
     def __str__(self) -> str:
         return "[%s]: %s" % (self.id, self.key)
 
-class AddressUs(models.Model):
-    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='user_address', null=True, blank=True)
-    phone_number = models.CharField(max_length=15, blank=True, null=True)
-    address_one = models.CharField(max_length=300, null=True, blank=True)
-    address_two = models.CharField(max_length=300, null=True, blank=True)
-    city = models.CharField(max_length=200, null=True, blank=True)
-    zipcode = models.IntegerField(null=True, blank=True)
-    country = models.CharField(max_length=2, null=True, blank=True)
 
-
-    def __str__(self):
-        return self.user.first_name
-    
 
 
 
@@ -112,6 +103,20 @@ class User(AbstractBaseUser):
         "Does the user have permissions to view the app `app_label`?"
         # Simplest possible answer: Yes, always
         return True
+    
+class AddressUs(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_address', null=True, blank=True)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
+    country = models.ForeignKey('products.Country', on_delete=models.SET_NULL, null=True)
+    state = models.ForeignKey('products.State', on_delete=models.SET_NULL, null=True)
+    city = models.ForeignKey('products.City', on_delete=models.SET_NULL, null=True)
+    zipcode = models.IntegerField(null=True, blank=True)
+    address= models.CharField(max_length=300, null=True, blank=True)
+
+
+    def __str__(self):
+        return self.user.first_name
+    
     
 
 

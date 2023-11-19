@@ -1,5 +1,7 @@
 from rest_framework import serializers
+from django.db import transaction
 from django.core.exceptions import ValidationError
+from helpers.image import base64_to_image
 from .models import *
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -23,6 +25,19 @@ class CountrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Country
         fields = '__all__'
+class ProductFeaturedImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductFeaturedImage
+        fields = '__all__'
+class ProductDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductDetails
+        fields = '__all__'
+        extra_kwargs = {
+            'product': {'required': False},
+            'description': {'required': False, 'allow_blank': True},
+            'specification': {'required': False, 'allow_blank': True},
+        } 
 
 class CreateProductSerializer(serializers.ModelSerializer):
     category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
@@ -31,6 +46,12 @@ class CreateProductSerializer(serializers.ModelSerializer):
     size = serializers.PrimaryKeyRelatedField(many=True, queryset=ProductSize.objects.all())
     unit = serializers.PrimaryKeyRelatedField(queryset=ProductUnit.objects.all(), allow_null=True)
     delivery_countries = serializers.PrimaryKeyRelatedField(many=True, queryset=Country.objects.all())
+    featured_image = serializers.CharField()
+    gallery_images = serializers.ListField(child=serializers.CharField(), write_only=True)
+    product_details = ProductDetailsSerializer(write_only=True)
+
+
+
 
     
     class Meta:
@@ -67,8 +88,31 @@ class CreateProductSerializer(serializers.ModelSerializer):
         color_data = validated_data.pop('color', [])
         size_data = validated_data.pop('size', [])
         delivery_countries_data = validated_data.pop('delivery_countries', [])
-        product = Product.objects.create(**validated_data)
-        product.color.set(color_data)
-        product.size.set(size_data)
-        product.delivery_countries.set(delivery_countries_data)
+        gallery_images_data = validated_data.pop('gallery_images', [])
+        featured_image = validated_data.pop('featured_image')
+        quantity = validated_data.get('quantity_in_stock')
+        product_details_data = validated_data.pop('product_details',{})
+        
+        with transaction.atomic():
+            product = Product.objects.create(**validated_data)
+            product.color.set(color_data)
+            product.size.set(size_data)
+            product.delivery_countries.set(delivery_countries_data)
+            """
+                for featured image and gallery image. Hare save only one singale featured_image and multiple gallery_images. 
+            """
+            file_path_195x192 = base64_to_image(featured_image, re_size=(195, 192))
+            ProductFeaturedImage.objects.create(product=product, image_195_X_192=file_path_195x192)
+            for img in gallery_images_data:
+                file_path_195x192 = base64_to_image(img, re_size=(195, 192))
+                file_path_270x180 = base64_to_image(img, re_size=(270, 180))
+                ProductGalleryImage.objects.create(product=product, image_195_X_192=file_path_195x192, image_270_X_180=file_path_270x180)
+            productInventory.objects.create(product=product, quantity=quantity)
+            description = product_details_data.get('description')
+            specification = product_details_data.get('specification')
+            product_details = ProductDetails.objects.filter(product=product).first()
+
+            if not product_details:
+                product_details = ProductDetails.objects.create(product=product, description=description, specification=specification)
+           
         return product

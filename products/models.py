@@ -1,4 +1,7 @@
+import uuid
 from django.db import models
+from django.utils import timezone
+
 
 from accounts.models import *
 
@@ -73,6 +76,12 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            slug = f"{uuid.uuid4().hex[:10]}-{timezone.now().strftime('%Y%m%d%H%M%S')}"
+            self.slug = slug[:300]  # Limit to max_length
+        super().save(*args, **kwargs)
+
     
 class ProductFeaturedImage(models.Model):
     product = models.OneToOneField(Product, on_delete=models.CASCADE, related_name='featured_image')
@@ -94,10 +103,14 @@ class productInventory(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return f"{self.product.name} - Quantity: {self.quantity}"
 class ProductDetails(models.Model):
     product = models.OneToOneField(Product, on_delete=models.CASCADE, related_name='details')
     description = models.TextField(blank=True, null=True)
     specification = models.TextField(blank=True, null=True)
+    def __str__(self):
+        return f"{self.product.name}"
 
 class ProductReview(models.Model):
     user = models.ForeignKey('accounts.User' ,on_delete=models.DO_NOTHING, related_name="reviewed_by",null=True,blank=True)
@@ -105,6 +118,8 @@ class ProductReview(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
     rating = models.FloatField(null=True, blank=True)
     comment = models.TextField(null=True, blank=True)
+    def __str__(self):
+        return f"{self.product.name} - name: {self.name}"
 
 
 

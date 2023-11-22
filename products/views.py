@@ -11,6 +11,13 @@ from .serializers import *
 
 class CreateProductAPIView(APIView):
     permission_classes = [IsAuthenticated]
+    def get(self, request):
+        products = Product.objects.all()
+        serializer = GetProductSerializer(products, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
     def post(self, request):
         serializer = CreateProductSerializer(data=request.data, context={'request':request})
         if serializer.is_valid():

@@ -69,20 +69,16 @@ def manage_user_type_view(request, pk):
     elif request.method == 'DELETE':
         instance.delete()
         return Response({"message": "User type deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
-
 class UserLoginView(APIView):
     def post(self, request):
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
-            email = serializer.data.get('email')
-            password = serializer.data.get('password')
-            user = authenticate(email=email, password=password)
-            if user is not None:
-                token=get_tokens_for_user(user)
-                return Response({'token':token,"message": "Login success!"}, status=status.HTTP_200_OK)
-            else:
-                return Response({"errors": "Email or Password is not valid!"}, status=status.HTTP_404_NOT_FOUND)
-        return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
+            user = serializer.validated_data['user']
+            token = get_tokens_for_user(user)
+            return Response({'token': token, "message": "Login success!"}, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
     

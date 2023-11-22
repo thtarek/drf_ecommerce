@@ -3,6 +3,14 @@ from django.db import transaction
 from django.core.exceptions import ValidationError
 from helpers.image import base64_to_image
 from .models import *
+from accounts.models import *
+
+
+
+class UserSerializerForProductList(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'first_name', 'last_name']
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -38,7 +46,13 @@ class ProductDetailsSerializer(serializers.ModelSerializer):
             'description': {'required': False, 'allow_blank': True},
             'specification': {'required': False, 'allow_blank': True},
         } 
-
+class GetProductSerializer(serializers.ModelSerializer):
+    vendor = UserSerializerForProductList()
+    class Meta:
+        model = Product
+        fields = '__all__'
+        depth=1
+        
 class CreateProductSerializer(serializers.ModelSerializer):
     category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
     color = serializers.PrimaryKeyRelatedField(many=True, queryset=Color.objects.all())

@@ -8,16 +8,14 @@ from .serializers import *
 
 
 # Create your views here.
-
-class CreateProductAPIView(APIView):
+class GetProductListAPIView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
-        products = Product.objects.all()
+        products =  Product.objects.filter(status=True, is_delete=False)
         serializer = GetProductSerializer(products, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-
+class CreateProductAPIView(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         serializer = CreateProductSerializer(data=request.data, context={'request':request})
         if serializer.is_valid():

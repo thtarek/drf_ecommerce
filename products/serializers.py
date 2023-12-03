@@ -2,7 +2,9 @@ from rest_framework import serializers
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from helpers.image import base64_to_image
+from django.core.exceptions import ObjectDoesNotExist
 from .models import *
+import os
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -116,3 +118,44 @@ class CreateProductSerializer(serializers.ModelSerializer):
                 product_details = ProductDetails.objects.create(product=product, description=description, specification=specification)
            
         return product
+    def update(self, instance, validated_data):
+        # color_data = validated_data.pop('color', [])
+        # size_data = validated_data.pop('size', [])
+        # delivery_countries_data = validated_data.pop('delivery_countries', [])
+        # gallery_images_data = validated_data.pop('gallery_images', [])
+        featured_image_data = validated_data.pop('featured_image')
+        # quantity = validated_data.get('quantity_in_stock')
+        # product_details_data = validated_data.pop('product_details',{})
+        brand = validated_data.get('brand', instance.brand)
+
+
+        with transaction.atomic():
+            instance.name = validated_data.get('name', instance.name)
+            instance.cost_price = validated_data.get('cost_price', instance.cost_price)
+            instance.regular_price = validated_data.get('regular_price', instance.regular_price)
+            instance.discount_price = validated_data.get('discount_price', instance.discount_price)
+            instance.quantity_in_stock = validated_data.get('quantity_in_stock', instance.quantity_in_stock)
+            instance.status = validated_data.get('status', instance.status)
+            instance.save()
+            if brand:
+                instance.brand = brand
+            try:
+                old_featured_image = instance.featured_image
+                if old_featured_image and featured_image_data:
+                    image_path = old_featured_image.image_195_X_192.path 
+                    print("path:", image_path)
+                    old_featured_image.delete()
+                    if os.path.exists(image_path):
+                        os.remove(image_path)
+            except ObjectDoesNotExist:
+                pass
+
+            # Create and associate new featured image
+            if featured_image_data:
+                file_path_195x192 = base64_to_image(featured_image_data, re_size=(195, 192))
+                ProductFeaturedImage.objects.create(product=instance, image_195_X_192=file_path_195x192)
+
+
+        instance.save()
+
+        return instance

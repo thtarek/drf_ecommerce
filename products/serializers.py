@@ -4,9 +4,7 @@ from django.core.exceptions import ValidationError
 from helpers.image import base64_to_image
 from django.core.exceptions import ObjectDoesNotExist
 from .models import *
-<<<<<<< HEAD
 import os
-=======
 from accounts.models import *
 
 
@@ -15,7 +13,6 @@ class UserSerializerForProductList(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'first_name', 'last_name']
->>>>>>> a3dc38e7e60d49cd7034a2e7c00ac3bc04b3d368
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:

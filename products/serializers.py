@@ -4,7 +4,18 @@ from django.core.exceptions import ValidationError
 from helpers.image import base64_to_image
 from django.core.exceptions import ObjectDoesNotExist
 from .models import *
+<<<<<<< HEAD
 import os
+=======
+from accounts.models import *
+
+
+
+class UserSerializerForProductList(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'first_name', 'last_name']
+>>>>>>> a3dc38e7e60d49cd7034a2e7c00ac3bc04b3d368
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,6 +30,10 @@ class BrandSerializer(serializers.ModelSerializer):
     class Meta:
         model = Brand
         fields = '__all__'
+class BrandSerializerForGetProduct(serializers.ModelSerializer):
+    class Meta:
+        model = Brand
+        fields = ['id','name']
 class UnitSerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
@@ -31,6 +46,10 @@ class ProductFeaturedImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductFeaturedImage
         fields = '__all__'
+class ProductGalleryImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductGalleryImage
+        fields = '__all__'
 class ProductDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductDetails
@@ -40,7 +59,15 @@ class ProductDetailsSerializer(serializers.ModelSerializer):
             'description': {'required': False, 'allow_blank': True},
             'specification': {'required': False, 'allow_blank': True},
         } 
-
+class GetProductSerializer(serializers.ModelSerializer):
+    vendor = UserSerializerForProductList()
+    featured_image = ProductFeaturedImageSerializer(read_only=True)
+    brand = BrandSerializerForGetProduct()
+    class Meta:
+        model = Product
+        exclude = ('unit','cost_price','status','is_delete','created_at','updated_at' )
+        depth=1
+        
 class CreateProductSerializer(serializers.ModelSerializer):
     category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
     color = serializers.PrimaryKeyRelatedField(many=True, queryset=Color.objects.all())
@@ -52,10 +79,6 @@ class CreateProductSerializer(serializers.ModelSerializer):
     gallery_images = serializers.ListField(child=serializers.CharField(), write_only=True)
     product_details = ProductDetailsSerializer(write_only=True)
 
-
-
-
-    
     class Meta:
         model = Product
         fields = '__all__'
